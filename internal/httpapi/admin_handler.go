@@ -7,16 +7,21 @@ import (
 
 	"github.com/Franconl/ffaas/internal/core"
 	"github.com/Franconl/ffaas/internal/repo"
+	"github.com/go-chi/chi/v5"
 )
 
+// AdminHandler agrupa los handlers http para la administracion de feature flags
+// Depende de un repositorio que implemente la interface repo.Flags
 type AdminHandler struct {
 	repo repo.Flags
 }
 
+// NewAdminHandler crea un nuevo admin handler usando el repositorio pasado por parametro
 func NewAdminHandler(r repo.Flags) *AdminHandler {
 	return &AdminHandler{repo: r}
 }
 
+// Create maneja POST /flags
 func (h *AdminHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var req CreateFlagRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -47,6 +52,8 @@ func (h *AdminHandler) Create(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, err.Error())
 	}
 
+	// se mapea la flag al DTO de respuesta
+
 	writeJSON(w, http.StatusCreated, FlagResponse{
 		ID:          flag.ID,
 		Key:         flag.Key,
@@ -58,6 +65,7 @@ func (h *AdminHandler) Create(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// List maneja GET /flags
 func (h *AdminHandler) List(w http.ResponseWriter, r *http.Request) {
 	val, err := h.repo.List()
 	if err != nil {
@@ -80,6 +88,29 @@ func (h *AdminHandler) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := ListFlagsResponse{Items: flags}
+
+	writeJSON(w, http.StatusOK, resp)
+}
+
+// GetByID maneja GET /flags/{id}
+func (h *AdminHandler) GetByID(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+
+	val, err := h.repo.GetByID(id)
+	if err != nil {
+		writeError(w, http.StatusNotFound, err.Error())
+		return
+	}
+
+	resp := FlagResponse{
+		ID:          val.ID,
+		Key:         val.Key,
+		Description: val.Description,
+		Enabled:     val.Enabled,
+		Percentage:  val.Percentage,
+		CreatedAt:   val.CreatedAt,
+		UpdatedAt:   val.UpdatedAt,
+	}
 
 	writeJSON(w, http.StatusOK, resp)
 }
