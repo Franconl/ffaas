@@ -17,7 +17,7 @@ func NewAdminHandler(r repo.Flags) *AdminHandler {
 	return &AdminHandler{repo: r}
 }
 
-func (h AdminHandler) Create(w http.ResponseWriter, r *http.Request) {
+func (h *AdminHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var req CreateFlagRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid JSON body")
@@ -56,6 +56,32 @@ func (h AdminHandler) Create(w http.ResponseWriter, r *http.Request) {
 		CreatedAt:   flag.CreatedAt,
 		UpdatedAt:   flag.UpdatedAt,
 	})
+}
+
+func (h *AdminHandler) List(w http.ResponseWriter, r *http.Request) {
+	val, err := h.repo.List()
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	flags := make([]FlagResponse, len(val))
+
+	for _, f := range val {
+		flags = append(flags, FlagResponse{
+			ID:          f.ID,
+			Key:         f.Key,
+			Description: f.Description,
+			Enabled:     f.Enabled,
+			Percentage:  f.Percentage,
+			CreatedAt:   f.CreatedAt,
+			UpdatedAt:   f.UpdatedAt,
+		})
+	}
+
+	resp := ListFlagsResponse{Items: flags}
+
+	writeJSON(w, http.StatusOK, resp)
 }
 
 func writeJSON(w http.ResponseWriter, status int, v any) {

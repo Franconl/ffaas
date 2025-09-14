@@ -22,5 +22,7 @@ func NewRouter(store repo.Flags) http.Handler {
 
 	r.Post("/flags", handlerAdmin.Create)
 
+	r.Get("/flags", handlerAdmin.List)
+
 	return r
 }
