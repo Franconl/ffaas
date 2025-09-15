@@ -7,6 +7,6 @@ type Flags interface {
 	Update(f *core.FeatureFlag) error
 	DeleteByID(id string) error
 	GetByID(id string) (*core.FeatureFlag, error)
-	GetByKey(id string) (*core.FeatureFlag, error)
+	GetByKey(key string) (*core.FeatureFlag, error)
 	List() ([]core.FeatureFlag, error)
 }

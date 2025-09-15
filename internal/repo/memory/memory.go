@@ -118,13 +118,13 @@ func (r *Repo) GetByKey(key string) (*core.FeatureFlag, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	flag, exist := r.byID[key]
+	flag, exist := r.byKey[key]
 
 	if !exist {
 		return nil, errors.New("key not found")
 	}
 
-	cur := flag
+	cur := r.byID[flag]
 	return &cur, nil
 }
 

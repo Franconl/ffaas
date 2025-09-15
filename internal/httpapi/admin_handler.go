@@ -115,6 +115,29 @@ func (h *AdminHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, resp)
 }
 
+// GetByKey maneja GET /flags/key/{key}
+func (h *AdminHandler) GetByKey(w http.ResponseWriter, r *http.Request) {
+	key := chi.URLParam(r, "key")
+
+	val, err := h.repo.GetByKey(key)
+	if err != nil {
+		writeError(w, http.StatusNotFound, err.Error())
+		return
+	}
+
+	resp := FlagResponse{
+		ID:          val.ID,
+		Key:         val.Key,
+		Description: val.Description,
+		Enabled:     val.Enabled,
+		Percentage:  val.Percentage,
+		CreatedAt:   val.CreatedAt,
+		UpdatedAt:   val.UpdatedAt,
+	}
+
+	writeJSON(w, http.StatusOK, resp)
+}
+
 func writeJSON(w http.ResponseWriter, status int, v any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)

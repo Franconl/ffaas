@@ -26,5 +26,7 @@ func NewRouter(store repo.Flags) http.Handler {
 
 	r.Get("/flags/{id}", handlerAdmin.GetByID)
 
+	r.Get("/flags/key/{key}", handlerAdmin.GetByKey)
+
 	return r
 }
