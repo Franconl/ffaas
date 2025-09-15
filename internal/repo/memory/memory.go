@@ -22,16 +22,23 @@ func New() *Repo {
 	}
 }
 
+var (
+	ErrNotFound       = errors.New("not found")
+	ErrKeyAlreadyUsed = errors.New("flag key already exists")
+	ErrKeyRequired    = errors.New("key is required")
+	ErrInvalidPercent = errors.New("invalid percentage")
+)
+
 func (r *Repo) Create(f *core.FeatureFlag) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
 	if f.Key == "" {
-		return errors.New("key is required")
+		return ErrNotFound
 	}
 
 	if _, exist := r.byKey[f.Key]; exist {
-		return errors.New("flag key already exist")
+		return ErrKeyAlreadyUsed
 	}
 
 	if f.ID == "" {
@@ -55,16 +62,16 @@ func (r *Repo) Update(f *core.FeatureFlag) error {
 	cur, exist := r.byID[f.ID]
 
 	if !exist {
-		return errors.New("id not found")
+		return ErrNotFound
 	}
 
 	if f.Key == "" {
-		return errors.New("key is required")
+		return ErrKeyRequired
 	}
 
 	if cur.Key != f.Key {
 		if otherID, exist := r.byKey[f.Key]; exist && otherID != f.ID {
-			return errors.New("flag key already exists")
+			return ErrKeyAlreadyUsed
 		} else {
 
 			delete(r.byKey, cur.Key)
@@ -94,7 +101,7 @@ func (r *Repo) DeleteByID(id string) error {
 		delete(r.byKey, flag.Key)
 
 	} else {
-		return errors.New("flag id not found")
+		return ErrNotFound
 	}
 
 	return nil
@@ -107,7 +114,7 @@ func (r *Repo) GetByID(id string) (*core.FeatureFlag, error) {
 	flag, exist := r.byID[id]
 
 	if !exist {
-		return nil, errors.New("id not found")
+		return nil, ErrNotFound
 	}
 
 	cur := flag
@@ -120,8 +127,8 @@ func (r *Repo) GetByKey(key string) (*core.FeatureFlag, error) {
 
 	id, exist := r.byKey[key]
 
-	if !exist {
-		return nil, errors.New("key not found")
+	if !exist || id == "" {
+		return nil, ErrNotFound
 	}
 
 	cur := r.byID[id]

@@ -2,6 +2,7 @@ package httpapi
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"time"
 
@@ -25,12 +26,12 @@ func NewAdminHandler(r repo.Flags) *AdminHandler {
 func (h *AdminHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var req CreateFlagRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeError(w, http.StatusBadRequest, "invalid JSON body")
+		writeError(w, http.StatusBadRequest, repo.ErrInvalidBody.Error())
 		return
 	}
 
 	if req.Key == "" {
-		writeError(w, http.StatusBadRequest, "key is necesary")
+		writeError(w, http.StatusBadRequest, repo.ErrKeyRequired.Error())
 		return
 	}
 
@@ -44,7 +45,7 @@ func (h *AdminHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	err := h.repo.Create(&flag)
 	if err != nil {
-		if err.Error() == "flag key already exist" {
+		if errors.Is(err, repo.ErrKeyAlreadyUsed) {
 			writeError(w, http.StatusConflict, err.Error())
 			return
 		}
@@ -73,7 +74,7 @@ func (h *AdminHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	flags := make([]FlagResponse, len(val))
+	flags := make([]FlagResponse, 0, len(val))
 
 	for _, f := range val {
 		flags = append(flags, FlagResponse{
