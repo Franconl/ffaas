@@ -148,7 +148,48 @@ func (h *AdminHandler) DeleteByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := h.repo.DeleteByID(id); err != nil {
+		writeError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	writeJSON(w, http.StatusNoContent, "")
+}
+
+func (h *AdminHandler) Update(w http.ResponseWriter, r *http.Request) {
+	var req UpdateFlagRequest
+
+	id := chi.URLParam(r, "id")
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	flag, err := h.repo.GetByID(id)
+	if err != nil {
+		writeError(w, http.StatusNotFound, err.Error())
+		return
+	}
+
+	flag.Description = req.Description
+	flag.Enabled = req.Enabled
+	flag.Percentage = req.Percentage
+
+	if errUpdate := h.repo.Update(flag); errUpdate != nil {
+		writeError(w, http.StatusInternalServerError, errUpdate.Error())
+		return
+	}
+
+	writeJSON(w, http.StatusOK, FlagResponse{
+		ID:          flag.ID,
+		Key:         flag.Key,
+		Description: flag.Description,
+		Enabled:     flag.Enabled,
+		Percentage:  flag.Percentage,
+		CreatedAt:   flag.CreatedAt,
+		UpdatedAt:   flag.UpdatedAt,
+	})
 }
 
 func writeJSON(w http.ResponseWriter, status int, v any) {

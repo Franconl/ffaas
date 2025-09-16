@@ -30,5 +30,7 @@ func NewRouter(store repo.Flags) http.Handler {
 
 	r.Delete("/flags/{id}", handlerAdmin.DeleteByID)
 
+	r.Put("/flags/{id}", handlerAdmin.Update)
+
 	return r
 }
