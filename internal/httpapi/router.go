@@ -20,6 +20,8 @@ func NewRouter(store repo.Flags) http.Handler {
 
 	handlerAdmin := NewAdminHandler(store)
 
+	handlerSdk := NewSdkHandler(store)
+
 	r.Post("/flags", handlerAdmin.Create)
 
 	r.Get("/flags", handlerAdmin.List)
@@ -31,6 +33,10 @@ func NewRouter(store repo.Flags) http.Handler {
 	r.Delete("/flags/{id}", handlerAdmin.DeleteByID)
 
 	r.Put("/flags/{id}", handlerAdmin.Update)
+
+	r.Get("/sdk/flags", handlerSdk.List)
+
+	r.Get("/sdk/eval", handlerSdk.Eval)
 
 	return r
 }
