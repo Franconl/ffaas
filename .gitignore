@@ -1,0 +1,33 @@
+# Configuración y secrets
+.env
+*.env
+
+# Binarios compilados
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Archivos generados por Go
+*.log
+*.cover
+*.prof
+*.pprof
+
+# Directorios de dependencias o builds
+/vendor/
+/bin/
+/dist/
+/build/
+/tmp/
+/coverage/
+
+# IDE/editor
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
